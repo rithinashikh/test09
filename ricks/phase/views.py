@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect
-from phase.forms.user import UserSignupForm, UserLoginForm
+from phase.forms.user import UserSignupForm, UserLoginForm, UserAddressForm
 from phase.forms.product import ProductForm
 from phase.forms.category import CategoryForm
-from .models import UserDetail, Product, Category, Cart, CartItem
+from .models import UserDetail, Product, Category, Cart, CartItem, Address, Order
 from django.contrib.auth.models import User
 import requests, random
 from django.contrib import messages
@@ -20,7 +20,8 @@ def userlogin(request):
             customer = UserDetail.objects.filter(uname=uname).first()
             if customer.upassword==password:
                 if customer.uactive:
-                    request.session['uname']=uname
+                    #request.session['uname']=uname
+                    request.session['some_data'] = uname
                     return redirect('otp')
             else:
                 return redirect('userlogin')
@@ -39,8 +40,7 @@ def usersignup(request):
     fm = UserSignupForm()
     return render (request, 'usersignup.html',{'fm':fm})
 
-def userlogout(request):
-    return redirect('userlogin')
+
 
 def shop(request):
     if 'uname' in request.session:
@@ -90,7 +90,7 @@ def adminuserlist(request):
             search=request.GET['search']
             details=UserDetail.objects.filter(uname__icontains=search)
         else:
-            details=UserDetail.objects.all()
+            details=UserDetail.objects.all().order_by('-id')
         return render(request,'adminuserlist.html',{'mymembers': details})
     else:
         return render(request, 'adminlogin.html')
@@ -101,7 +101,7 @@ def adminproductlist(request):
             search=request.GET['search']
             details=Product.objects.filter(name__icontains=search)
         else:
-            details2=Product.objects.all()
+            details2=Product.objects.all().order_by('-id')
         return render(request,'adminproductlist.html',{'mymembers2': details2})
     else:
         return render(request, 'adminlogin.html')
@@ -128,6 +128,7 @@ def adminaddcategory(request):
                 name = fm.cleaned_data['name']
                 dup = Category.objects.filter(name=name).first()
                 if dup:
+                    messages.warning(request,'Category already exists')
                     return redirect('adminaddcategory')
                 else: 
                     fm.save()
@@ -157,14 +158,17 @@ def userblock(request):
     for x in block_check:
         if x.uactive:
             UserDetail.objects.filter(id=uid).update(uactive=False)
+            messages.warning(request, f'{x.uname} is blocked')
         else:
             UserDetail.objects.filter(id=uid).update(uactive=True)
+            messages.success(request, f'{x.uname} is unblocked')
     return redirect('adminuserlist')
 
 
 def userlogout(request):
     if 'uname' in request.session:
         del request.session['uname']
+        del request.session['some_data']
     return redirect('userlogin')
 
 def userdelete(request):
@@ -183,7 +187,7 @@ def admincategorylist(request):
             search=request.GET['search']
             details=Category.objects.filter(name__icontains=search)
         else:
-            details2=Category.objects.all()
+            details2=Category.objects.all().order_by('-id')
         return render(request,'admincategorylist.html',{'mymembers2': details2})
     else:
         return render(request, 'adminlogin.html')
@@ -209,32 +213,82 @@ def updatecategory(request):
 
 
 def otp(request):
-    global r1
+    global otp_sent
     if request.method=='POST':
-        otp_ent = int(request.POST.get('c_otp'))
-        if otp_ent==r1:
+        otp_rec = int(request.POST.get('c_otp'))
+        if otp_rec==otp_sent:
+            request.session['uname'] = request.session['some_data']
             return redirect('shop')
         else:
-            print("!!! Incorrect OTP !!!")
+            messages.warning(request, 'Incorrect OTP')
             return redirect('otp')
     else:
 
-        r1 = random.randint(1001, 9999)
+        otp_sent = random.randint(1001, 9999)
+        # use = request.session['some_data']
+        # obj = UserDetail.objects.get(uname=use)
         # url = 'https://www.fast2sms.com/dev/bulkV2'
-        # message = r1
-        # numbers = '9656791614'
-        # payload = f'sender_id=TXTIND&message={message}&route=v3&language=english&numbers={numbers}'
+        # payload = f'sender_id=TXTIND&message={otp_sent}&route=v3&language=english&numbers={obj.uphone}'
         # headers = {
         #     'authorization': "xoiObB7WLa4GvY0uPZ6J9KmS1kXQCA2MeRhpzfTHN5sy8dctVDo5mkyeX9CRJxBKzu8M7FZ0stfh2gdi",
         #     'Content-Type': "application/x-www-form-urlencoded"
         #     }
         # response = requests.request("POST", url, data=payload, headers=headers)
         # print(response.text) 
-        print("R1 Sent value::",r1)
+        print("Sent value::",otp_sent)
     return render(request, 'otp.html')
 
 def checkout(request):
-    return render(request, 'checkout.html')
+    if request.method=='POST':
+        fm = UserAddressForm(request.POST) 
+        if fm.is_valid():
+            use = request.session['uname']
+            user = UserDetail.objects.get(uname = use)
+            reg = fm.save(commit=False)
+            reg.user = user
+            reg.save()
+            messages.success(request, 'new address added successfully')
+            return redirect('checkout') 
+        else:
+            messages.warning(request,'Enter the address') 
+            return redirect('checkout') 
+    else:
+        fm = UserAddressForm()
+        use = request.session['uname']
+        context=Address.objects.filter(user__uname = use)
+        ret = itemcalculate(use)
+        return render(request, 'checkout.html', {'fm': fm, 'context': context, 'data':ret['data'], 'datap':ret['datap']})
+
+def updateaddress(request,id):
+    add = Address.objects.get(id=id)
+    if request.method == 'POST':
+        fm = UserAddressForm(request.POST, instance=add)
+        if fm.is_valid():
+            fm.save()
+            return redirect('checkout')
+    else:
+        fm = UserAddressForm(instance=add)
+        use = request.session['uname']
+        context=Address.objects.filter(user__uname = use)
+        ret = itemcalculate(use)
+        return render(request, 'updateaddress.html', {'fm': fm, 'context': context, 'data':ret['data'], 'datap':ret['datap']})
+
+def deleteaddress(request):
+    uid=request.GET['uid']
+    Address.objects.filter(id=uid).delete()
+    return redirect('checkout')
+
+def address_select(request):
+    uid=request.GET['uid']
+    select_check=Address.objects.filter(id=uid)
+    for x in select_check:
+        if x.selected:
+            Address.objects.filter(id=uid).update(selected=False)
+            messages.warning(request, f'{x.name} is Unselected')
+        else:
+            Address.objects.filter(id=uid).update(selected=True)
+            messages.success(request, f'{x.name} is Selected')
+    return redirect('checkout')
 
 def addtocart(request):
     use=request.session['uname']
@@ -249,17 +303,29 @@ def addtocart(request):
     except Product.DoesNotExist:
         return redirect('shop')
     try:
-        cartitem=CartItem.objects.get(cart=cart,product=product)
-        cartitem.quantity+=1
+        if product.stock < 1:
+            messages.warning(request, 'Out of stock')
+            return redirect('shop')
+        else:
+            cartitem=CartItem.objects.get(cart=cart,product=product)
+            cartitem.quantity+=1
+            product.stock-=1
+            Product.objects.filter(id=pid).update(stock=product.stock)
     except CartItem.DoesNotExist:
-        cartitem=CartItem.objects.create(cart=cart,product=product,quantity=1)
+        if product.stock < 1:
+            messages.warning(request, 'Out of stock')
+            return redirect('shop')
+        else:
+            cartitem=CartItem.objects.create(cart=cart,product=product,quantity=1)
+            product.stock-=1
+            Product.objects.filter(id=pid).update(stock=product.stock)
+
     cartitem.save()
     return redirect('cart')
 
-def cart(request):
+def itemcalculate(name):
     total=0
     quantity=0
-    name=request.session['uname']
     set1=UserDetail.objects.filter(uname=name).first()
     set2=set1.id
     data=CartItem.objects.filter(cart__user__id=set2)
@@ -272,4 +338,38 @@ def cart(request):
         "total":total,
         "quantity":quantity
     }
-    return render(request,'cart.html',{'data':data, 'datap':datap})
+    return({'data':data, 'datap':datap})
+
+def cart(request):
+    name=request.session['uname']
+    ret = itemcalculate(name)
+    return render(request,'cart.html',ret)
+
+def delcartitems(request):
+    id=request.GET['id']
+    CartItem.objects.filter(cartitemid=id).delete()
+    return redirect('cart')
+
+def payment(request):
+
+    return render(request,'payment.html')
+
+
+
+def order(request):
+    user = request.session['uname']
+    user = UserDetail.objects.get(uname = user)
+    ord = Order.objects.filter(user=user)
+    return render(request,'order.html',{'ord':ord})
+
+def thankyou(request):
+    user = request.session['uname']
+    use1 = UserDetail.objects.get(uname = user)
+    use2 = Address.objects.get(user=use1,selected=True)
+    cart = CartItem.objects.filter(cart__user__uname=use1)
+    for c in cart:
+        Order(user=use1, address=use2, product=c.product).save()
+        c.delete() 
+
+    print(use2)
+    return render(request,'thankyou.html')

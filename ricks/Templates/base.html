@@ -19,6 +19,19 @@
     <link rel="stylesheet" href="{% static 'css/aos.css' %}">
 
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <!-- CSS (ALertify)-->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+    <!-- Default theme (ALertify)-->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/default.min.css"/>
+
+
+<!--
+    <link type="text/css" rel="stylesheet" href="{% static 'magiczoom/magiczoom.css' %}">
+    <script type="text/javascript" src="{% static 'magiczoom/magiczoom.js' %}">
+
+
+    </script>-->
     
   </head>
   <body>
@@ -50,7 +63,7 @@
                   <li>
                     <a href="{% url 'cart' %}" class="site-cart">
                       <span class="icon icon-shopping_cart"></span>
-                      <span class="count">2</span>
+                      <!--<span class="count">2</span>-->
                     </a>
                   </li> 
                   <li class="d-inline-block d-md-none ml-md-0"><a href="" class="site-menu-toggle js-menu-toggle"><span class="icon-menu"></span></a></li>
@@ -164,7 +177,20 @@
     </footer>
   </div>
 
-
+  <!-- JavaScript Alertify -->
+  <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+  <script>
+    {% for flashmsg in messages %}
+     alertify.set('notifier','position', 'bottom-right');
+   {% if flashmsg.tags == 'warning' %}
+     alertify.warning('{{flashmsg}}');
+   {% elif flashmsg.tags == 'success' %}
+   alertify.success('{{flashmsg}}');
+   {% endif %}
+   {% endfor %}
+    
+   </script>
+  
   <script src="{% static 'js/jquery-3.3.1.min.js' %}"></script>
   <script src="{% static 'js/jquery-ui.js' %}"></script>
   <script src="{% static 'js/popper.min.js' %}"></script>
@@ -176,4 +202,5 @@
   <script src="{% static 'js/main.js' %}"></script>
     
   </body>
+
 </html>

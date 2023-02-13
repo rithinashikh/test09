@@ -28,5 +28,12 @@ urlpatterns = [
     path('cart/', views.cart, name='cart'),
     path('otp/', views.otp, name='otp'),
     path('checkout/', views.checkout, name='checkout'),
+    path('thankyou/', views.thankyou, name='thankyou'),
+    path('delcartitems/', views.delcartitems, name='delcartitems'),
+    path('updateaddress/<int:id>', views.updateaddress, name='updateaddress'),
+    path('deleteaddress/', views.deleteaddress, name='deleteaddress'),
+    path('address_select/', views.address_select, name='address_select'),
+    path('payment/', views.payment, name='payment'),
+    path('order/', views.order, name='order'),
 
 ]

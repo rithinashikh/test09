@@ -5,7 +5,7 @@
     <div class="bg-light py-3">
       <div class="container">
         <div class="row">
-          <div class="col-md-12 mb-0"><a href="{% url 'index' %}">Home</a> <span class="mx-2 mb-0">/</span> <strong class="text-black">Cart</strong></div>
+          <div class="col-md-12 mb-0"><a href="{% url 'index' %}">Home</a> <span class="mx-2 mb-0">/</span> <strong class="text-black">Order</strong></div>
         </div>
       </div>
     </div>
@@ -18,46 +18,32 @@
               <table class="table table-bordered">
                 <thead>
                   <tr>
-                    <th class="product-thumbnail">Image</th>
-                    <th class="product-name">Product</th>
-                    <th class="product-price">Price</th>
-                    <th class="product-quantity">Quantity</th>
+                    <th class="product-thumbnail">Order ID</th>
+                    <th class="product-name">Date</th>
+                    <th class="product-price">Image</th>
+                    <th class="product-quantity">Order Details</th>
                     <th class="product-total">Total</th>
-                    <th class="product-remove">Remove</th>
+                    <th class="product-total">Order Type</th>
+                    <th class="product-total">Status</th>
+
                   </tr>
                 </thead>
                 <tbody>
                
-                  {% for i in data %}
+                  {% for i in ord %}
                   <tr>
-                    <td class="product-thumbnail">
-                    <img src="{{i.product.image.url}}" alt="Image" class="img-fluid" style="height:120px">
-                    </td>
                     <td class="product-name">
-                      <h2 class="h5 text-black">{{i.product}}</h2>
+                      <h2 class="h5 text-black">RCK00{{i.id}}</h2>
                     </td>
-                    <td>₹{{i.product.price}}</td>
-                    <td>
-                      <div class="input-group mb-3" style="max-width: 120px;">
-                        <div class="input-group-prepend">
-                          <button class="btn btn-outline-primary js-btn-minus" type="button">&minus;</button>
-                        </div>
-                        <input type="text" class="form-control text-center" value="{{i.quantity}}" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
-                        <div class="input-group-append">
-                          <button class="btn btn-outline-primary js-btn-plus" type="button">&plus;</button>
-                        </div>
-                      </div>
-
+                    <td>{{i.ordered_date}}</td>
+                    <td class="product-thumbnail">
+                    <img src="{{ord.product__image.url}}" alt="Image" class="img-fluid" style="height:120px">
                     </td>
-                    <td>₹{{i.subtotal}}</td>
+                    <td>{{i.ordered_date}}</td>
+                    <td>{{i.ordered_date}}</td>
+                    <td>{{i.ordertype}}</td>
+                    <td>{{i.status}}</td>
 
-                    <td>
-
-
-                          <a href="{% url 'delcartitems' %}?id={{i.cartitemid}}" class="btn btn-primary" >X </a>
-
-
-                    </td>
                   </tr>
 
             
@@ -99,6 +85,7 @@
             </div>-->
           </div>
           <div class="col-md-6 pl-5">
+            <!--
             <div class="row justify-content-end">
               <div class="col-md-7">
                 <div class="row">
@@ -130,6 +117,7 @@
                 </div>
               </div>
             </div>
+            -->
           </div>
         </div>
       </div>

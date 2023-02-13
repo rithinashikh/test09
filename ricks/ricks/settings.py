@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'ricks.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'Ricks4',
+        'NAME': 'Ricks9',
         'USER':'postgres',
         'PASSWORD':'rith12345',
         'HOST':'localhost',

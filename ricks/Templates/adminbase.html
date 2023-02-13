@@ -12,6 +12,12 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!-- CSS (ALertify)-->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
+    <!-- Default theme (ALertify)-->
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/themes/default.min.css"/>
+
 <style>
     body {
         color: #566787;
@@ -249,12 +255,13 @@
             <ul class="nav nav-pills bg-info list">
                 
                 <li role="presentation" class={% block active1 %} {% endblock %}><a href="{% url 'admindashboard' %}">Dashboard</a></li>
-                <li role="presentation" class={% block active2 %} {% endblock %}><a href="{% url 'adminuserlist' %}">User list</a></li>
-                <li role="presentation" class={% block active3 %} {% endblock %}><a href="{% url 'adminproductlist' %}">Product list</a></li>
+                <li role="presentation" class={% block active2 %} {% endblock %}><a href="{% url 'adminuserlist' %}">Users</a></li>
+                <li role="presentation" class={% block active3 %} {% endblock %}><a href="{% url 'adminproductlist' %}">Products</a></li>
+				<li role="presentation" class={% block active5 %} {% endblock %}><a href="{% url 'admincategorylist' %}">Categories</a></li>
+				<!--
 				<li role="presentation" class={% block active4 %} {% endblock %}><a href="{% url 'adminaddproduct' %}">Add Product</a></li>
-				<li role="presentation" class={% block active5 %} {% endblock %}><a href="{% url 'admincategorylist' %}">Category List</a></li>
 				<li role="presentation" class={% block active6 %} {% endblock %}><a href="{% url 'adminaddcategory' %}">Add Category</a></li>
-                
+                -->
                 <li ><a class="log-out" href="{% url 'adminlogout' %}">Log out</a></li>
                 
             </ul>
@@ -275,6 +282,19 @@
 
         </div>
     </div>
+  <!-- JavaScript Alertify -->
+  <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>
+  <script>
+   {% for flashmsg in messages %}
+    alertify.set('notifier','position', 'bottom-right');
+	{% if flashmsg.tags == 'warning' %}
+    alertify.warning('{{flashmsg}}');
+	{% elif flashmsg.tags == 'success' %}
+	alertify.success('{{flashmsg}}');
+	{% endif %}
+  {% endfor %}
+   
+  </script>
 
 
 </body>
