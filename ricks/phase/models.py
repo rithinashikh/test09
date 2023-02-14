@@ -33,6 +33,8 @@ class CartItem(models.Model):
     cart=models.ForeignKey(Cart,on_delete=models.CASCADE,null=False)
     product=models.ForeignKey(Product,on_delete=models.CASCADE,null=False)
     quantity=models.PositiveBigIntegerField()
+
+    @property
     def subtotal(self):
         return int(self.product.price)*int(self.quantity)
 
@@ -65,7 +67,8 @@ STATUS_CHOICES = (
     ('Packed', 'Packed'),
     ('On the way', 'On the way'),
     ('Delivered', 'Delivered'),
-    ('Canceled', 'Canceled')
+    ('Canceled', 'Canceled'),
+    ('Return', 'Return'),
 )
 TYPE_CHOICES = (
     ('Cash on delivery', 'Cash on delivery'),
@@ -79,3 +82,5 @@ class Order(models.Model):
     ordered_date = models.DateTimeField(auto_now_add=True)
     ordertype = models.CharField(max_length=50, choices=TYPE_CHOICES, default='Cash on delivery')
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
+    def __str__(self):
+        return str(self.id)

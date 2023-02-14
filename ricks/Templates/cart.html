@@ -40,11 +40,11 @@
                     <td>
                       <div class="input-group mb-3" style="max-width: 120px;">
                         <div class="input-group-prepend">
-                          <button class="btn btn-outline-primary js-btn-minus" type="button">&minus;</button>
+                          <button class="btn btn-outline-primary js-btn-minus minus-cart" pid="{{i.product.id}}" type="button">&minus;</button>
                         </div>
                         <input type="text" class="form-control text-center" value="{{i.quantity}}" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
                         <div class="input-group-append">
-                          <button class="btn btn-outline-primary js-btn-plus" type="button">&plus;</button>
+                          <button class="btn btn-outline-primary js-btn-plus plus-cart" pid="{{i.product.id}}" type="button">&plus;</button>
                         </div>
                       </div>
 
@@ -111,7 +111,7 @@
                     <span class="text-black">Total Quantity</span>
                   </div>
                   <div class="col-md-6 text-right">
-                    <strong class="text-black"> {{datap.quantity}}</strong>
+                    <strong class="text-black" id="quantityajax"> {{datap.quantity}}</strong>
                   </div>
                 </div>
                 <div class="row mb-5">
@@ -119,7 +119,7 @@
                     <span class="text-black">Total Price</span>
                   </div>
                   <div class="col-md-6 text-right">
-                    <strong class="text-black">₹ {{datap.total}}</strong>
+                    <strong class="text-black" id="totalajax">₹ {{datap.total}}</strong>
                   </div>
                 </div>
 

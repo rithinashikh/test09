@@ -35,5 +35,11 @@ urlpatterns = [
     path('address_select/', views.address_select, name='address_select'),
     path('payment/', views.payment, name='payment'),
     path('order/', views.order, name='order'),
+    path('plus_cart', views.plus_cart),
+    path('minus_cart', views.minus_cart),
+    path('cancelorder/<int:id>', views.cancelorder, name='cancelorder'),
+    path('returnorder/<int:id>', views.returnorder, name='returnorder'),
+    path('adminorderlist/', views.adminorderlist, name='adminorderlist'),
+    path('updateorder/<int:id>', views.updateorder, name='updateorder'),
 
 ]

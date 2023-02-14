@@ -1,5 +1,5 @@
 from django import forms
-from phase.models import UserDetail, Address
+from phase.models import UserDetail, Address, Order
 from django.forms import ModelForm
 
 class UserSignupForm(forms.ModelForm):
@@ -55,13 +55,17 @@ class UserAddressForm(forms.ModelForm):
             'zipcode':'Zipcode',
             'phone':'Phone',
         }
-        # label_attrs = {
-        #     'name': {'class': 'text-black'},
-        #     'housename': {'class': 'text-black'},
-        #     'locality': {'class': 'text-black'},
-        #     'city': {'class': 'text-black'},
-        #     'state': {'class': 'text-black'},
-        #     'zipcode': {'class': 'text-black'},
-        #     'phone': {'class': 'text-black'},
-        # }
+
         
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['ordertype','status']
+        widgets = {
+            'ordertype' : forms.TextInput(attrs={'class':'form-control'}),
+            'status' : forms.Select(attrs={'class':'form-control'}),
+        }
+        labels={
+            'ordertype':'Order Type',
+            'status':'Status',
+        }

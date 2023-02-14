@@ -20,6 +20,9 @@
 
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
+    <!--Ajax CDN-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+
     <!-- CSS (ALertify)-->
     <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/css/alertify.min.css"/>
     <!-- Default theme (ALertify)-->
@@ -176,6 +179,71 @@
       </div>
     </footer>
   </div>
+  <!--AJAX-->
+  <script>
+    $('.plus-cart').click(function(){
+      console.log("Inside plus cart")
+      var id = $(this).attr("pid").toString();
+      var eml = this.parentNode.parentNode.parentNode.parentNode.children[4]
+      $.ajax({
+        type:"GET",
+        url:"http://127.0.0.1:8000/plus_cart",
+        data:{
+          prod_id : id
+        },
+        success: function (datap) {
+          eml.innerText = ("₹"+datap.ind_subtotal)
+          document.getElementById("quantityajax").innerText = datap.quantity;
+          document.getElementById("totalajax").innerText = ("₹ " + datap.total);
+        }
+      })
+    
+      })
+      $('.minus-cart').click(function(){
+      console.log("Inside minus cart")
+      var id = $(this).attr("pid").toString();
+      var eml = this.parentNode.parentNode.parentNode.parentNode.children[4]
+      $.ajax({
+        type:"GET",
+        url:"http://127.0.0.1:8000/minus_cart",
+        data:{
+          prod_id : id
+        },
+        success: function (datap) {
+          eml.innerText = ("₹"+datap.ind_subtotal)
+          document.getElementById("quantityajax").innerText = datap.quantity;
+          document.getElementById("totalajax").innerText = ("₹ " + datap.total);
+        }
+      })
+    
+      })
+  </script>
+  <script>
+  
+    const link1 = document.querySelector('.my-link1');
+    const link2 = document.querySelector('.my-link2');
+
+    link1.addEventListener('click', function(event) {
+      event.preventDefault(); // prevent default link behavior
+    
+      if (confirm('You really want to cancel?')) {
+        window.location.href = link1.href; // redirect to link URL
+      }
+    });
+
+    link2.addEventListener('click', function(event) {
+      event.preventDefault(); // prevent default link behavior
+    
+      if (confirm('You really want to return?')) {
+        window.location.href = link2.href; // redirect to link URL
+      }
+    });
+      
+    
+    
+
+  </script>
+
 
   <!-- JavaScript Alertify -->
   <script src="//cdn.jsdelivr.net/npm/alertifyjs@1.13.1/build/alertify.min.js"></script>

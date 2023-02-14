@@ -1,11 +1,13 @@
 from django.shortcuts import render, redirect
-from phase.forms.user import UserSignupForm, UserLoginForm, UserAddressForm
+from phase.forms.user import UserSignupForm, UserLoginForm, UserAddressForm, OrderForm
 from phase.forms.product import ProductForm
 from phase.forms.category import CategoryForm
 from .models import UserDetail, Product, Category, Cart, CartItem, Address, Order
 from django.contrib.auth.models import User
 import requests, random
 from django.contrib import messages
+from django.http import JsonResponse
+from django.db.models import Q, F
 
 def index(request):
     return render(request, 'index.html')
@@ -99,7 +101,7 @@ def adminproductlist(request):
     if 'username' in request.session:
         if 'search' in request.GET:
             search=request.GET['search']
-            details=Product.objects.filter(name__icontains=search)
+            details2=Product.objects.filter(name__icontains=search)
         else:
             details2=Product.objects.all().order_by('-id')
         return render(request,'adminproductlist.html',{'mymembers2': details2})
@@ -185,7 +187,7 @@ def admincategorylist(request):
     if 'username' in request.session:
         if 'search' in request.GET:
             search=request.GET['search']
-            details=Category.objects.filter(name__icontains=search)
+            details2=Category.objects.filter(name__icontains=search)
         else:
             details2=Category.objects.all().order_by('-id')
         return render(request,'admincategorylist.html',{'mymembers2': details2})
@@ -218,6 +220,7 @@ def otp(request):
         otp_rec = int(request.POST.get('c_otp'))
         if otp_rec==otp_sent:
             request.session['uname'] = request.session['some_data']
+            messages.success(request,"Login Completed Successfully")
             return redirect('shop')
         else:
             messages.warning(request, 'Incorrect OTP')
@@ -265,6 +268,7 @@ def updateaddress(request,id):
         fm = UserAddressForm(request.POST, instance=add)
         if fm.is_valid():
             fm.save()
+            messages.success(request,"Address updated successfully")
             return redirect('checkout')
     else:
         fm = UserAddressForm(instance=add)
@@ -347,6 +351,10 @@ def cart(request):
 
 def delcartitems(request):
     id=request.GET['id']
+    it=CartItem.objects.get(cartitemid=id)
+    cart_quantity = it.quantity
+    cart_product = it.product.name
+    Product.objects.filter(name=cart_product).update(stock=F('stock')+cart_quantity)
     CartItem.objects.filter(cartitemid=id).delete()
     return redirect('cart')
 
@@ -359,7 +367,7 @@ def payment(request):
 def order(request):
     user = request.session['uname']
     user = UserDetail.objects.get(uname = user)
-    ord = Order.objects.filter(user=user)
+    ord = Order.objects.filter(user=user).order_by('-id')
     return render(request,'order.html',{'ord':ord})
 
 def thankyou(request):
@@ -370,6 +378,71 @@ def thankyou(request):
     for c in cart:
         Order(user=use1, address=use2, product=c.product).save()
         c.delete() 
-
-    print(use2)
     return render(request,'thankyou.html')
+
+def plus_cart(request):
+    if request.method == 'GET':
+        use = request.session['uname']
+        user = UserDetail.objects.get(uname = use)
+        prod_id=request.GET['prod_id']
+        c = CartItem.objects.get(Q(product=prod_id) & Q(cart__user=user))
+        c.quantity+=1
+        c.save()
+        Product.objects.filter(id=prod_id).update(stock=F('stock') - 1)
+        d = CartItem.objects.get(Q(product=prod_id) & Q(cart__user=user))
+        sub = d.subtotal
+        ret = itemcalculate(use)
+        datap = {
+            'total': ret['datap']['total'],
+            'quantity': ret['datap']['quantity'],
+            'ind_subtotal': sub,
+        }
+        return JsonResponse(datap)
+    
+def minus_cart(request):
+    print("Inside minus cart", request)
+    if request.method == 'GET':
+        use = request.session['uname']
+        user = UserDetail.objects.get(uname = use)
+        prod_id=request.GET['prod_id']
+        c = CartItem.objects.get(Q(product=prod_id) & Q(cart__user=user))
+        c.quantity-=1
+        c.save()
+        Product.objects.filter(id=prod_id).update(stock=F('stock') + 1)
+        d = CartItem.objects.get(Q(product=prod_id) & Q(cart__user=user))
+        sub = d.subtotal
+        ret = itemcalculate(use)
+        datap = {
+            'total': ret['datap']['total'],
+            'quantity': ret['datap']['quantity'],
+            'ind_subtotal': sub,
+        }
+        return JsonResponse(datap)
+    
+def cancelorder(request,id):
+    Order.objects.filter(id=id).update(status='Canceled')
+    return redirect('order')
+
+def returnorder(request,id):
+    Order.objects.filter(id=id).update(status='Return')
+    return redirect('order')
+
+
+def adminorderlist(request):
+    if 'search' in request.GET:
+        search=request.GET['search']
+        member=Order.objects.filter(user__uname__icontains=search)
+    else:
+        member = Order.objects.all().order_by('-id')
+    return render(request,'adminorderlist.html',{'member':member})
+
+def updateorder(request,id):
+    ord = Order.objects.get(id=id)
+    if request.method == 'POST':
+        fm = OrderForm(request.POST, request.FILES, instance=ord)
+        if fm.is_valid():
+            fm.save()
+            return redirect('adminorderlist')
+    else:
+        fm = OrderForm(instance=ord)
+        return render(request, 'adminupdateorder.html', {'fm': fm})
