@@ -23,9 +23,7 @@
                     <th class="product-price">Image</th>
                     
                     <th class="product-quantity">Order Details</th>
-                    <!--
-                    <th class="product-quantity">Amount</th>
-                    -->
+                    <th class="product-quantity">Address</th>
                     <th class="product-total">Order Type</th>
                     <th class="product-total">Status</th>
                     <th class="product-total">Action</th>
@@ -44,9 +42,9 @@
                     <img src="{{i.product.image.url}}" alt="Image" class="img-fluid" style="height:60px">
                     </td>
                     <td>{{i.product}} </td>
-                    <!--
-                    <td>{{i.status}}</td>
-                    -->
+                 
+                    <td><b>{{i.address.name}}</b><br>{{i.address.housename}}<br>PIN:{{i.address.zipcode}}</td>
+                  
                     <td><b>{{i.ordertype}}</b></td>
                     
                     <td>

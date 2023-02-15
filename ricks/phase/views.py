@@ -8,6 +8,7 @@ import requests, random
 from django.contrib import messages
 from django.http import JsonResponse
 from django.db.models import Q, F
+from django.core.paginator import Paginator
 
 def index(request):
     return render(request, 'index.html')
@@ -228,16 +229,16 @@ def otp(request):
     else:
 
         otp_sent = random.randint(1001, 9999)
-        # use = request.session['some_data']
-        # obj = UserDetail.objects.get(uname=use)
-        # url = 'https://www.fast2sms.com/dev/bulkV2'
-        # payload = f'sender_id=TXTIND&message={otp_sent}&route=v3&language=english&numbers={obj.uphone}'
-        # headers = {
-        #     'authorization': "xoiObB7WLa4GvY0uPZ6J9KmS1kXQCA2MeRhpzfTHN5sy8dctVDo5mkyeX9CRJxBKzu8M7FZ0stfh2gdi",
-        #     'Content-Type': "application/x-www-form-urlencoded"
-        #     }
-        # response = requests.request("POST", url, data=payload, headers=headers)
-        # print(response.text) 
+        use = request.session['some_data']
+        obj = UserDetail.objects.get(uname=use)
+        url = 'https://www.fast2sms.com/dev/bulkV2'
+        payload = f'sender_id=TXTIND&message={otp_sent}&route=v3&language=english&numbers={obj.uphone}'
+        headers = {
+            'authorization': "xoiObB7WLa4GvY0uPZ6J9KmS1kXQCA2MeRhpzfTHN5sy8dctVDo5mkyeX9CRJxBKzu8M7FZ0stfh2gdi",
+            'Content-Type': "application/x-www-form-urlencoded"
+            }
+        response = requests.request("POST", url, data=payload, headers=headers)
+        print(response.text) 
         print("Sent value::",otp_sent)
     return render(request, 'otp.html')
 
@@ -258,7 +259,7 @@ def checkout(request):
     else:
         fm = UserAddressForm()
         use = request.session['uname']
-        context=Address.objects.filter(user__uname = use)
+        context=Address.objects.filter(user__uname = use).order_by('-id')
         ret = itemcalculate(use)
         return render(request, 'checkout.html', {'fm': fm, 'context': context, 'data':ret['data'], 'datap':ret['datap']})
 
@@ -290,6 +291,7 @@ def address_select(request):
             Address.objects.filter(id=uid).update(selected=False)
             messages.warning(request, f'{x.name} is Unselected')
         else:
+            Address.objects.all().update(selected=False)
             Address.objects.filter(id=uid).update(selected=True)
             messages.success(request, f'{x.name} is Selected')
     return redirect('checkout')
@@ -431,10 +433,16 @@ def returnorder(request,id):
 def adminorderlist(request):
     if 'search' in request.GET:
         search=request.GET['search']
-        member=Order.objects.filter(user__uname__icontains=search)
+        member=Order.objects.filter(user__uname__icontains=search).order_by('-id')
+        paginator = Paginator(member, 2)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
     else:
         member = Order.objects.all().order_by('-id')
-    return render(request,'adminorderlist.html',{'member':member})
+        paginator = Paginator(member, 3)
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+    return render(request,'adminorderlist.html', {'page_obj': page_obj})
 
 def updateorder(request,id):
     ord = Order.objects.get(id=id)

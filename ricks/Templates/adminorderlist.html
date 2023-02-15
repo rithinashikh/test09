@@ -39,7 +39,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for x in member %}
+                  
+ 
+                    {% for x in page_obj %}
                     <tr>
                         <td>#RCK00{{ x.id }}</td>       
                         <td>{{ x.user }}</td>                  
@@ -60,7 +62,26 @@
                     {% endfor %}
   
                 </tbody>
+
                 </table>
+                                <!-- Display pagination links -->
+                                <div class="pagination">
+                                    <span class="step-links">
+                                        {% if page_obj.has_previous %}
+                                            <a href="?page=1">&laquo; first</a>
+                                            <a href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                        {% endif %}
+            
+                                        <span class="current-page">
+                                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                                        </span>
+            
+                                        {% if page_obj.has_next %}
+                                            <a href="?page={{ page_obj.next_page_number }}">Next</a>
+                                            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                                        {% endif %}
+                                    </span>
+                                </div>
 
 
                 

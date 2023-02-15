@@ -9,7 +9,7 @@ class ProductForm(forms.ModelForm):
         widgets = {
             'name' : forms.TextInput(attrs={'class':'form-control'}),
             'price' : forms.TextInput(attrs={'class':'form-control'}),
-            'description' : forms.TextInput(attrs={'class':'form-control'}),
+            'description' : forms.Textarea(attrs={'class':'form-control','rows': 4}),
             'image' : forms.FileInput(attrs={'class':'form-control'}),
             'stock': forms.NumberInput(attrs={'class': 'form-control'}),
             'category' : forms.Select(attrs={'class':'form-control'}),
